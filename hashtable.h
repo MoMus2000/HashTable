@@ -16,8 +16,8 @@ typedef struct {
 } Entry;
 
 typedef struct {
-  int    count;
-  int    capacity;
+  uint64_t    count;
+  uint64_t    capacity;
   Entry* entries;
 } Table;
 
@@ -31,7 +31,7 @@ Entry* findKey(Entry *entries, ObjString *key, int capacity);
 
 bool resizeTable(Table* table);
 
-bool tableSet(Table* table, ObjString* key, void* value);
+Entry* tableSet(Table* table, ObjString* key, void* value);
 
 Entry* tableGet(Table *table, ObjString* key);
 

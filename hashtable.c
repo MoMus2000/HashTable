@@ -34,17 +34,25 @@ uint32_t hashString(char* key) {
 void initTable(Table* table) {
   table->count    = 0;
   table->capacity = 1000;
-  table->entries  = malloc(sizeof(Entry) * MAP_CAP);
+  Entry* entries  = malloc(sizeof(Entry) * MAP_CAP);
   for(int i=0; i<table->capacity; ++i){
-    table->entries[i].key   = NULL;
+    entries[i].key   = NULL;
   }
+  table->entries = entries;
 }
 
 Entry* findKey(Entry *entries, ObjString *key, int capacity){
   uint32_t index = (key->hash % capacity);
   for(;;){
     Entry *entry = &entries[index];
-    if (entry->key == key || entry->key == NULL){
+    /*if (entry->key == key || entry->key == NULL){*/
+    if (entry->key == NULL){
+      return entry;
+    }
+    else if(strcmp(entry->key->string, key->string) == 0){
+      /*print("Found a key that exists %s", entry->key->string);*/
+      /*print("UserKey %s", key->string);*/
+      /*print("-----------------------------------");*/
       return entry;
     }
     index = (index+1) % capacity;
@@ -52,26 +60,26 @@ Entry* findKey(Entry *entries, ObjString *key, int capacity){
 }
 
 bool resizeTable(Table* table){
-  if (table->count >= (table->capacity * 0.75)){
+  if (table->count >= (table->capacity * 0.50)){
       print("Resizing Table");
-      Entry* entries = realloc(table->entries, sizeof(Entry)*MAP_CAP*2);
-      for(int i=0; i<MAP_CAP*2; ++i){
+      Entry* entries = realloc(table->entries, sizeof(Entry)*table->capacity*table->capacity);
+      for(int i=0; i<table->capacity*table->capacity; ++i){
         entries[i].key = NULL;
       }
       for(int i=0; i<table->capacity; ++i){
         if(table->entries[i].key == NULL) continue;
-        Entry *dest = findKey(entries, table->entries[i].key, MAP_CAP*2);
+        Entry *dest = findKey(entries, table->entries[i].key, table->capacity*table->capacity);
         dest->key   = table->entries[i].key;
         dest->value = table->entries[i].value;
       }
-      table->capacity = MAP_CAP*2;
+      table->capacity = table->capacity*table->capacity;
       table->entries  = entries;
       return true;
   }
   return false;
 }
 
-bool tableSet(Table* table, ObjString* key, void* value){
+Entry* tableSet(Table* table, ObjString* key, void* value){
   if(resizeTable(table)){
     print("Resized the table");
   }
@@ -79,41 +87,6 @@ bool tableSet(Table* table, ObjString* key, void* value){
   if(entry->key == NULL) table->count++;
   entry->key   = key;
   entry->value = (void *)value;
-  return true;
-}
-
-// Function to generate a random string
-void generateRandomString(char *str, int length) {
-    int charsetSize = sizeof(CHARSET) - 1;
-    
-    for (int i = 0; i < length; i++) {
-        str[i] = CHARSET[rand() % charsetSize];
-    }
-    
-    str[length] = '\0'; // Null-terminate the string
-}
-
-int main(){
-  Table table;
-  initTable(&table);
-
-  for (int i = 0; i < STRING_COUNT*100*100; i++) {
-    char* value = "123";
-    char randomString[STRING_LENGTH + 1];  // Stack allocation for each string
-    generateRandomString(randomString, STRING_LENGTH);
-    printf("String %d: %s\n", i + 1, randomString);
-    uint32_t hash = hashString(randomString);
-    ObjString* alloc = allocateString(randomString, strlen(randomString), hash);
-    tableSet(&table, alloc, &value);
-  }
-
-  /*uint32_t hash = hashString("HELLO");*/
-  /*ObjString* alloc = allocateString("HELLO", strlen("HELLO"), hash);*/
-  /*double d = 10.0;*/
-  /*void* ptr = &d;*/
-  /*tableSet(&table, alloc, ptr);*/
-  /*printf("String : %f\n",  *(double *)tableGet(&table, alloc)->value);*/
-
-  return 0;
+  return entry;
 }
 
