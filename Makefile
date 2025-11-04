@@ -18,3 +18,6 @@ clean:
 node:
 	gcc -o build/llist linked_list.c && ./build/llist
 
+tree:
+	gcc -o build/tree tree.c && ./build/tree
+
