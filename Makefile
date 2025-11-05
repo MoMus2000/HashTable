@@ -21,3 +21,9 @@ node:
 tree:
 	gcc -o build/tree tree.c && ./build/tree
 
+alloc:
+	gcc -o build/alloc allocator.c && ./build/alloc
+
+arr:
+	gcc -o build/arr dynamic_arr.c && ./build/arr
+
